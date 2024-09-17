@@ -1,0 +1,15 @@
+- name: "Check if {{ item }} is in the dock"  # noqa name[template]
+  ansible.builtin.command: "dockutil --find '{{ item }}'"
+  register: dock_dockitem_status
+  failed_when: >
+    "No such file or directory" in dock_dockitem_status.stdout
+    or "command not found" in dock_dockitem_status.stdout
+  changed_when: false
+
+- name: "Remove {{ item }} from the dock"   # noqa name[template]
+  when: dock_dockitem_status.rc == 0
+  ansible.builtin.shell: |
+    dockutil --remove '{{ item }}' --no-restart
+    sleep 3
+  changed_when: true
+  notify: restart dock

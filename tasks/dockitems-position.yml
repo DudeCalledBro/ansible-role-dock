@@ -1,0 +1,19 @@
+- name: "Check if {{ item.name }} is in the dock"   # noqa name[template]
+  ansible.builtin.command: "dockutil --find '{{ item.name }}'"
+  register: dock_dockitem_status
+  failed_when: >
+    "No such file or directory" in dock_dockitem_status.stdout
+    or "command not found" in dock_dockitem_status.stdout
+  changed_when: false
+
+- name: "Parse dock position of {{ item.name }}"  # noqa name[template]
+  ansible.builtin.set_fact:
+    macdock_dockitem_pos: "{{ dock_dockitem_status.stdout | regex_replace('^.*slot (.*) in.*$', '\\1') }}"
+
+- name: "Move {{ item.name }} to the correct position"  # noqa name[template]
+  when: (macdock_dockitem_pos | int) != (item.pos | int)
+  ansible.builtin.shell: |
+    dockutil --move '{{ item.name }}' --position '{{ item.pos }}' --no-restart
+    sleep 3
+  changed_when: true
+  notify: restart dock

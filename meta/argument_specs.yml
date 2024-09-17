@@ -1,0 +1,25 @@
+argument_specs:
+  main:
+    short_description: dock
+    description: "Configure MacOS Dock."
+    author: dudecalledbro
+    options:
+      dock_packages:
+        type: bool
+        description: "Define if 'dockutil' should be installed."
+      dock_items:
+        type: list
+        elements: dict
+        options:
+          name:
+            type: str
+            required: true
+            description: "Name of the dockitem."
+          path:
+            type: str
+            required: true
+            description: "Application path for dockitem."
+          pos:
+            type: int
+            required: true
+            description: "Position of the dockitem."

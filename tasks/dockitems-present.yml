@@ -1,0 +1,20 @@
+- name: "Check if {{ item.name }} is in the dock"   # noqa name[template]
+  ansible.builtin.command: "dockutil --find '{{ item.name }}'"
+  register: dock_dockitem_status
+  failed_when: >
+    "No such file or directory" in dock_dockitem_status.stdout
+    or "command not found" in dock_dockitem_status.stdout
+  changed_when: false
+
+- name: "Parse {{ item.name }} dock section"  # noqa name[template]
+  when: dock_dockitem_status.rc == 0
+  ansible.builtin.set_fact:
+    macdock_dockitem_section: "{{ dock_dockitem_status.stdout | regex_replace('^.*was found in (.*) at slot.*$', '\\1') }}"
+
+- name: "Add {{ item.name }} to the dock"   # noqa name[template]
+  when: (dock_dockitem_status.rc > 0) or (dock_dockitem_status.rc == 0 and macdock_dockitem_section == 'recent-apps')
+  ansible.builtin.shell: |
+    dockutil --add '{{ item.path }}' --label '{{ item.name }}' --no-restart
+    sleep 3
+  changed_when: true
+  notify: restart dock

@@ -1,0 +1,9 @@
+- name: Restarting dock
+  ansible.builtin.command: /usr/bin/killall Dock
+  changed_when: true
+  listen: restart dock
+
+- name: Wait until dock is ready
+  ansible.builtin.command: sleep 5
+  changed_when: true
+  listen: restart dock

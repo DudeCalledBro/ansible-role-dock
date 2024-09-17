@@ -1,0 +1,11 @@
+# define if 'dockutil' should be installed (options: true|false)
+dock_packages: true
+
+# define items in dock (others will be removed)
+dock_items: []
+# - name: Notizen
+#   path: /System/Applications/Notes.app/
+#   pos: 1
+# - name: Firefox
+#   path: /Applications/Firefox.app/
+#   pos: 2

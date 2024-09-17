@@ -1,0 +1,35 @@
+- name: Install dockutil
+  community.general.homebrew:
+    name: dockutil
+    state: present
+  when: dock_packages | bool
+
+- name: Determine existing dockitems  # noqa risky-shell-pipe
+  ansible.builtin.shell: >-
+    dockutil --list | awk -F 'file' '{print $1}' | sed 's/\t//g'
+  register: dock_items_existing
+  changed_when: false
+
+- name: Deselect unwanted dockitems
+  ansible.builtin.set_fact:
+    dock_items_remove: "{{ dock_items_existing.stdout_lines | difference(dock_items | map(attribute='name')) }}"
+
+- name: Erase unwanted dockitems
+  ansible.builtin.include_tasks: dockitems-absent.yml
+  loop: "{{ dock_items_remove }}"
+
+- name: Add required dockitems
+  ansible.builtin.include_tasks: dockitems-present.yml
+  loop: "{{ dock_items }}"
+  loop_control:
+    extended: true
+    extended_allitems: false
+    label: "{{ item.name }}"
+
+- name: Ensure required dockitems position
+  ansible.builtin.include_tasks: dockitems-position.yml
+  loop: "{{ dock_items }}"
+  loop_control:
+    extended: true
+    extended_allitems: false
+    label: "{{ item.name }}"
